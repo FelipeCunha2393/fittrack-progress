@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      cardio_logs: {
+        Row: {
+          activity: string
+          distance_km: number | null
+          duration_seconds: number
+          id: string
+          logged_at: string
+          user_id: string
+        }
+        Insert: {
+          activity: string
+          distance_km?: number | null
+          duration_seconds?: number
+          id?: string
+          logged_at?: string
+          user_id: string
+        }
+        Update: {
+          activity?: string
+          distance_km?: number | null
+          duration_seconds?: number
+          id?: string
+          logged_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

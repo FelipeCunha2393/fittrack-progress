@@ -3,12 +3,13 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import AppLayout from "@/components/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { MUSCLE_IMAGES } from "@/data/exerciseLibrary";
 
 type Exercise = {
   id: string;
@@ -126,20 +127,35 @@ export default function PlanDetail() {
                         onClick={() => openLog(ex)}
                         className="w-full text-left rounded-md border border-border/30 p-3 hover:border-primary/30 transition-colors"
                       >
-                        <div className="flex justify-between items-center">
-                          <div>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={MUSCLE_IMAGES[ex.muscle_group] || MUSCLE_IMAGES["Core"]}
+                            alt={ex.muscle_group}
+                            className="w-10 h-10 rounded-lg object-cover"
+                          />
+                          <div className="flex-1">
                             <p className="font-medium text-sm">{ex.name}</p>
                             <p className="text-xs text-muted-foreground capitalize">{ex.muscle_group}</p>
                           </div>
                           <div className="text-right text-xs text-muted-foreground">
-                            <p>{ex.sets} × {ex.suggested_reps} reps</p>
+                            <p>{ex.sets} × {ex.suggested_reps}</p>
                           </div>
                         </div>
                       </button>
                     </DialogTrigger>
                     <DialogContent className="max-w-sm">
                       <DialogHeader>
-                        <DialogTitle>{ex.name}</DialogTitle>
+                        <DialogTitle className="flex items-center gap-3">
+                          <img
+                            src={MUSCLE_IMAGES[ex.muscle_group] || MUSCLE_IMAGES["Core"]}
+                            alt={ex.muscle_group}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                          <div>
+                            <p>{ex.name}</p>
+                            <p className="text-sm font-normal text-muted-foreground capitalize">{ex.muscle_group}</p>
+                          </div>
+                        </DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-3">
