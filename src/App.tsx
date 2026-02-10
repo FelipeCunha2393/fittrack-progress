@@ -12,6 +12,7 @@ import Progress from "./pages/Progress";
 import GenerateWorkout from "./pages/GenerateWorkout";
 import CreateWorkout from "./pages/CreateWorkout";
 import PlanDetail from "./pages/PlanDetail";
+import Cardio from "./pages/Cardio";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/generate" element={<ProtectedRoute><GenerateWorkout /></ProtectedRoute>} />
             <Route path="/create" element={<ProtectedRoute><CreateWorkout /></ProtectedRoute>} />
             <Route path="/plan/:id" element={<ProtectedRoute><PlanDetail /></ProtectedRoute>} />
+            <Route path="/cardio" element={<ProtectedRoute><Cardio /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

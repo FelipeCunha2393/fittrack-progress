@@ -3,30 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import AppLayout from "@/components/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Flame, Zap, Sparkles, Loader2 } from "lucide-react";
+import { Flame, Zap, Sparkles, Loader2, Baby, Dumbbell, Trophy } from "lucide-react";
+
+type Level = "beginner" | "intermediate" | "advanced";
 
 export default function GenerateWorkout() {
   const { user, profile } = useAuth();
   const [goal, setGoal] = useState<"fat_burning" | "hypertrophy" | "">("");
+  const [level, setLevel] = useState<Level | "">("");
   const [generating, setGenerating] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleGenerate = async () => {
-    if (!user || !goal || !profile) return;
+    if (!user || !goal || !level || !profile) return;
     setGenerating(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-workout", {
-        body: { goal, gender: profile.gender, weight: profile.current_weight_kg },
+        body: { goal, gender: profile.gender, weight: profile.current_weight_kg, level },
       });
 
       if (error) throw error;
 
-      // Create the plan
       const { data: plan, error: planErr } = await supabase
         .from("workout_plans")
         .insert({ user_id: user.id, name: data.name, goal })
@@ -34,7 +35,6 @@ export default function GenerateWorkout() {
         .single();
       if (planErr) throw planErr;
 
-      // Create sessions and exercises
       for (const session of data.sessions) {
         const { data: ws, error: wsErr } = await supabase
           .from("workout_sessions")
@@ -76,36 +76,66 @@ export default function GenerateWorkout() {
         <h1 className="text-4xl font-display tracking-wider">
           AI <span className="text-primary">GENERATE</span>
         </h1>
-        <p className="text-muted-foreground">Choose your goal and we'll create a personalized plan for you</p>
+        <p className="text-muted-foreground">Choose your goal and level for a personalized plan</p>
 
-        <div className="grid gap-3">
-          {([
-            { value: "fat_burning" as const, icon: Flame, label: "Fat Burning", desc: "High intensity, calorie-torching workouts", color: "text-accent" },
-            { value: "hypertrophy" as const, icon: Zap, label: "Hypertrophy", desc: "Build muscle mass and strength", color: "text-primary" },
-          ]).map(({ value, icon: Icon, label, desc, color }) => (
-            <button
-              key={value}
-              onClick={() => setGoal(value)}
-              className={`w-full text-left rounded-lg border-2 p-4 transition-all ${
-                goal === value
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/30"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Icon className={`h-6 w-6 ${color}`} />
-                <div>
-                  <p className="font-semibold">{label}</p>
-                  <p className="text-xs text-muted-foreground">{desc}</p>
+        {/* Goal selection */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-foreground">Goal</p>
+          <div className="grid gap-3">
+            {([
+              { value: "fat_burning" as const, icon: Flame, label: "Fat Burning", desc: "High intensity, calorie-torching workouts", color: "text-accent" },
+              { value: "hypertrophy" as const, icon: Zap, label: "Hypertrophy", desc: "Build muscle mass and strength", color: "text-primary" },
+            ]).map(({ value, icon: Icon, label, desc, color }) => (
+              <button
+                key={value}
+                onClick={() => setGoal(value)}
+                className={`w-full text-left rounded-lg border-2 p-4 transition-all ${
+                  goal === value
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/30"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className={`h-6 w-6 ${color}`} />
+                  <div>
+                    <p className="font-semibold">{label}</p>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Level selection */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-foreground">Training Level</p>
+          <div className="grid grid-cols-3 gap-3">
+            {([
+              { value: "beginner" as Level, icon: Baby, label: "Beginner", desc: "3-4 exercises/session" },
+              { value: "intermediate" as Level, icon: Dumbbell, label: "Intermediate", desc: "5-6 exercises/session" },
+              { value: "advanced" as Level, icon: Trophy, label: "Advanced", desc: "7-8 exercises/session" },
+            ]).map(({ value, icon: Icon, label, desc }) => (
+              <button
+                key={value}
+                onClick={() => setLevel(value)}
+                className={`text-center rounded-lg border-2 p-3 transition-all ${
+                  level === value
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/30"
+                }`}
+              >
+                <Icon className={`h-5 w-5 mx-auto mb-1 ${level === value ? "text-primary" : "text-muted-foreground"}`} />
+                <p className="font-semibold text-sm">{label}</p>
+                <p className="text-[10px] text-muted-foreground">{desc}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
         <Button
           onClick={handleGenerate}
-          disabled={!goal || generating}
+          disabled={!goal || !level || generating}
           className="w-full font-semibold"
           size="lg"
         >

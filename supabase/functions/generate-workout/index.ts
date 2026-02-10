@@ -2,14 +2,14 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { goal, gender, weight } = await req.json();
+    const { goal, gender, weight, level = "beginner" } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -27,18 +27,46 @@ Session D - Hamstrings & Glutes`;
     const split = gender === "female" ? womenSplit : menSplit;
     const sessionCount = gender === "female" ? 4 : 3;
 
-    const prompt = `You are a professional fitness coach. Generate a ${goal === "fat_burning" ? "fat burning" : "hypertrophy"} workout plan for a ${gender} weighing ${weight}kg.
+    // Exercise count varies by level
+    let exerciseRange: string;
+    let setsRange: string;
+    let levelDescription: string;
+    
+    switch (level) {
+      case "beginner":
+        exerciseRange = "3-4";
+        setsRange = "2-3";
+        levelDescription = "Keep it simple with fundamental compound movements. Focus on form over weight.";
+        break;
+      case "intermediate":
+        exerciseRange = "5-6";
+        setsRange = "3-4";
+        levelDescription = "Mix compound and isolation movements. Include some advanced techniques like supersets.";
+        break;
+      case "advanced":
+        exerciseRange = "7-8";
+        setsRange = "3-5";
+        levelDescription = "Include advanced movements, drop sets, supersets. High volume training with both compound and isolation exercises.";
+        break;
+      default:
+        exerciseRange = "5-7";
+        setsRange = "3-4";
+        levelDescription = "Standard training program.";
+    }
+
+    const prompt = `You are a professional fitness coach. Generate a ${goal === "fat_burning" ? "fat burning" : "hypertrophy"} workout plan for a ${gender} weighing ${weight}kg. Training level: ${level}.
 
 Use this split structure:
 ${split}
 
 Rules:
-- Each session should have 5-7 exercises
+- Each session should have ${exerciseRange} exercises
+- ${levelDescription}
 - Minimum 10 reps per exercise suggested
 - For fat burning: higher reps (12-15), shorter rest, include supersets
 - For hypertrophy: moderate reps (10-12), progressive overload focus
 - Include compound and isolation movements
-- Sets should be 3-4 per exercise
+- Sets should be ${setsRange} per exercise
 
 Return ONLY valid JSON in this exact format:
 {
@@ -98,7 +126,6 @@ Generate exactly ${sessionCount} sessions.`;
     const data = await response.json();
     let content = data.choices?.[0]?.message?.content || "";
     
-    // Strip markdown code fences if present
     content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     
     const plan = JSON.parse(content);

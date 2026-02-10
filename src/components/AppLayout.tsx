@@ -1,11 +1,12 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Dumbbell, LayoutDashboard, User, BarChart3, Shield, LogOut } from "lucide-react";
+import { Dumbbell, LayoutDashboard, User, BarChart3, Shield, LogOut, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Workouts" },
+  { to: "/cardio", icon: Heart, label: "Cardio" },
   { to: "/progress", icon: BarChart3, label: "Progress" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
