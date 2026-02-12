@@ -1,13 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 
 type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
-  profile: any | null;
+  profile: Tables<"profiles"> | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -18,8 +19,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isAdmin: false,
   profile: null,
-  signOut: async () => {},
-  refreshProfile: async () => {},
+  signOut: async () => { },
+  refreshProfile: async () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -29,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [profile, setProfile] = useState<Tables<"profiles"> | null>(null);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
